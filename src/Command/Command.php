@@ -1,84 +1,80 @@
 <?php
 
 namespace App\Command;
-use App\TechRealisation\JsonLogic;
 use App\Model\User;
-
+use App\Repository\UserRepositoryInterface;
 class Command
 {
-    private JsonLogic $jsonLogic;
-    public function __construct(JsonLogic $jsonLogic){
-        $this->jsonLogic = $jsonLogic;
+
+    public function __construct(
+        private UserRepositoryInterface $userRepository
+    ){
+
     }
 
 
     public function execute(string $command, array $arguments = []):void{
-        if ($command === 'delete') {
-            if (!isset($arguments[0]) || !is_numeric($arguments[0])) {
-                echo "Укажите корректный id" . PHP_EOL;
-                return;
-            }
-        }
         match ($command) {
             'list'=>$this->showList(),
             'add'=>$this->add($arguments),
-            'delete'=>$this->delete($arguments[0]),
+            'delete'=>$this->delete($arguments),
             default=>$this->helpMessage()
         };
     }
 
     private function showList():void{
-        $users = $this->jsonLogic->getUsersFromJson();
+        $users = $this->userRepository->getAll();
         if (empty($users)){
             echo "Список пуст" . PHP_EOL;
             return;
         }
         foreach ($users as $user){
-            echo $user->getId() . " | " .
-            $user->getSurname() . " " .
-            $user->getName(). " | " .
-            $user->getEmail() . PHP_EOL;
+            echo $user->id . " | " .
+            $user->surname . " " .
+            $user->name. " | " .
+            $user->email . PHP_EOL;
         }
     }
     private function helpMessage():void{
-        echo "Неизвестная команда... Список доступных комманд: list add delete";
+        echo "Неизвестная команда... Список доступных команд: list add delete";
     }
 
     private function add(array $arguments):void{
-        $users = $this->jsonLogic->getUsersFromJson();
+        $users = $this->userRepository->getAll();
         $max = 0;
         foreach ($users as $user){
-             if ($user->getId() > $max){
-                 $max = $user->getId();
+             if ($user->id > $max){
+                 $max = $user->id;
              }
         }
         $newId = $max +1;
         if (empty($arguments)){
-            $user = new User($newId, "Фамилия".$newId, "Имя".$newId, "user".$newId."@gmail.com");
+            $faker = \Faker\Factory::create('ru_RU');
+            $user = new User(
+                $newId,
+                $faker->lastName,
+                $faker->firstName,
+                $faker->email);
         }
         else{
-            if(count($arguments) !== 3){ //или можно через рефлексию узнавать колво аргументов конструктора, но мне стало лень разбираться -_-
-                echo "Неверное число аргументов";
+            if(count($arguments) !== 3){
+                echo "Неверное число аргументов".PHP_EOL;
                 return;
             }
-            $user = new User($newId, $arguments[0], $arguments[1], $arguments[2]); // здесь также можно обобщить.
+            $user = new User($newId, $arguments[0], $arguments[1], $arguments[2]);
         }
-        $users[]=$user;
-        $this->jsonLogic->saveUsersToJson($users);
+        $users[$newId]=$user;
+        $this->userRepository->saveAll($users);
         echo "Пользователь добавлен" . PHP_EOL;
     }
 
-    private function delete(int $id):void{
-        $users = $this->jsonLogic->getUsersFromJson();
-        foreach ($users as $index => $user){
-            if ($user->getId() === $id){
-                unset($users[$index]);
-                $this->jsonLogic->saveUsersToJson($users);
-                echo "Пользователь удалён" . PHP_EOL;
-                return;
-            }
+    private function delete(array $arguments):void{
+        if (empty($arguments) || !is_numeric($arguments[0])) {
+            echo "Укажите корректный id" . PHP_EOL;
+            return;
         }
-        echo "Пользователь не с таким id не найден" . PHP_EOL;
+        $id = (int) $arguments[0];
+        $this->userRepository->delete($id);
     }
 
 }

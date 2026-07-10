@@ -3,10 +3,15 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\Command\Command;
-use App\TechRealisation\JsonLogic;
+use App\Repository\JsonUserRepository;
+use App\Config\ConfigBd;
+use App\Repository\UserRepositoryFactory;
 
-$jsonLogic = new JsonLogic();
-$command = new Command($jsonLogic);
+
+$config = new ConfigBd();
+$logic = new UserRepositoryFactory($config);
+$repository = $logic->create();
+$command = new Command($repository);
 
 
 if (isset($argv[1])) {
@@ -16,3 +21,4 @@ if (isset($argv[1])) {
 else{
     echo "Укажите команду Список доступных команд: list add delete";
 }
+

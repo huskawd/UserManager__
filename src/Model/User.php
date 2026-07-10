@@ -4,46 +4,42 @@ namespace App\Model;
 
 use App\Exceptions\InvalidUserDataException;
 
-class User
+readonly class User
 {
-    private int $id;
-    private string $surname;
-    private string $name;
-    private string $email;
-
-    public function __construct(int $id, string $surname, string $name, string $email){
+    public function __construct(
+        public int $id,
+        public string $surname,
+        public string $name,
+        public string $email
+    ){
         if ($id <= 0){
             throw new InvalidUserDataException();
         }
-        $this->id = $id;
+
         if (trim($surname) === ''){
             throw new InvalidUserDataException();
         }
-        $this->surname = $surname;
+
         if (trim($name)=== ''){
             throw new InvalidUserDataException();
         }
-        $this->name = $name;
+
         if (trim($email) === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false){
             throw new InvalidUserDataException();
         }
-        $this->email = $email;
+
+    }
+    public static function fromArray(array $data): self{
+        return  new User($data['id'], $data['surname'], $data['name'], $data['email']);
+    }
+    public function toArray(): array{
+        return [
+            'id' => $this->id,
+            'surname' => $this->surname,
+            'name' => $this->name,
+            'email' => $this->email
+        ];
     }
 
-    public function getId(): int{
-        return $this->id;
-    }
-
-    public function getSurname(): string{
-        return $this->surname;
-    }
-
-    public function getName(): string{
-        return $this->name;
-    }
-
-    public function getEmail(): string{
-        return $this->email;
-    }
 
 }
