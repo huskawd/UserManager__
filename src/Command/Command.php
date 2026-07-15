@@ -1,80 +1,86 @@
 <?php
 
 namespace App\Command;
+
 use App\Model\User;
 use App\Repository\UserRepositoryInterface;
+use Faker\Factory;
+
 class Command
 {
-
     public function __construct(
         private UserRepositoryInterface $userRepository
-    ){
+    ) {
 
     }
 
 
-    public function execute(string $command, array $arguments = []):void{
+    public function execute(string $command, array $arguments = []): void
+    {
         match ($command) {
-            'list'=>$this->showList(),
-            'add'=>$this->add($arguments),
-            'delete'=>$this->delete($arguments),
-            default=>$this->helpMessage()
+            'list' => $this->showList(),
+            'add' => $this->add($arguments),
+            'delete' => $this->delete($arguments),
+            default => $this->helpMessage()
         };
     }
 
-    private function showList():void{
+    private function showList(): void
+    {
         $users = $this->userRepository->getAll();
-        if (empty($users)){
+        if ($users === []) {
             echo "Список пуст" . PHP_EOL;
             return;
         }
-        foreach ($users as $user){
+        foreach ($users as $user) {
             echo $user->id . " | " .
             $user->surname . " " .
             $user->name. " | " .
             $user->email . PHP_EOL;
         }
     }
-    private function helpMessage():void{
+    private function helpMessage(): void
+    {
         echo "Неизвестная команда... Список доступных команд: list add delete";
     }
 
-    private function add(array $arguments):void{
-        $users = $this->userRepository->getAll();
-        $max = 0;
-        foreach ($users as $user){
-             if ($user->id > $max){
-                 $max = $user->id;
-             }
+
+    private function add(array $arguments): void
+    {
+        if ($arguments !== [] && count($arguments) !== 3) {
+            echo "Неверное число аргументов" . PHP_EOL;
+            return;
         }
-        $newId = $max +1;
-        if (empty($arguments)){
-            $faker = \Faker\Factory::create('ru_RU');
+        if ($arguments === []) {
+            $faker = Factory::create('ru_RU');
+
             $user = new User(
-                $newId,
+                null,
                 $faker->lastName,
                 $faker->firstName,
-                $faker->email);
+                $faker->email
+            );
+        } else {
+            $user = new User(
+                null,
+                $arguments[0],
+                $arguments[1],
+                $arguments[2]
+            );
         }
-        else{
-            if(count($arguments) !== 3){
-                echo "Неверное число аргументов".PHP_EOL;
-                return;
-            }
-            $user = new User($newId, $arguments[0], $arguments[1], $arguments[2]);
-        }
-        $users[$newId]=$user;
-        $this->userRepository->saveAll($users);
+        $this->userRepository->add($user);
         echo "Пользователь добавлен" . PHP_EOL;
     }
 
-    private function delete(array $arguments):void{
-        if (empty($arguments) || !is_numeric($arguments[0])) {
+    private function delete(array $arguments): void
+    {
+        if ($arguments === [] || !is_numeric($arguments[0])) {
             echo "Укажите корректный id" . PHP_EOL;
             return;
         }
         $id = (int) $arguments[0];
         $this->userRepository->delete($id);
+        echo "Пользователь удалён" . PHP_EOL;
     }
 
 }
