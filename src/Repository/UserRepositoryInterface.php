@@ -6,7 +6,7 @@ use App\Model\User;
 
 interface UserRepositoryInterface
 {
-    public function getAll(): array;
+    public function getAll(): iterable;
 
     public function delete(int $id): void;
 

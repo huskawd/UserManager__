@@ -2,9 +2,9 @@
 
 namespace App\Exceptions;
 
-class JsonFileProblemsException extends \RuntimeException
+class UserNotFoundException extends \RuntimeException
 {
-    protected $message = "Проблемы при работе с файлом json";
+    protected $message = "Пользователь с таким id не найден";
     public function __construct(?string $message = null)
     {
         parent::__construct($this->message);

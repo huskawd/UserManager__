@@ -2,34 +2,17 @@
 
 namespace App\Repository;
 
+use App\Exceptions\UserNotFoundException;
 use App\Model\User;
-use App\Config\ConfigBd;
 use PDO;
 
 class SqlUserRepository implements UserRepositoryInterface
 {
-    private PDO $pdo;
-   public function __construct(
-       ConfigBd $configBd
-   )
-   {
-       $config  = $configBd->getDatabaseConfig();
-       $dsn = sprintf(
-           'mysql:host=%s;port=%s;dbname=%s',
-           $config['host'],
-           $config['port'],
-           $config['database']);
-
-           $this->pdo = new PDO(
-               $dsn,
-               $config['user'],
-               $config['password']
-           );
-       $this->pdo->setAttribute(
-           PDO::ATTR_ERRMODE,
-           PDO::ERRMODE_EXCEPTION);
-           $this->createTableIfNotExists();
-   }
+    public function __construct(
+        private PDO $pdo
+    ) {
+        $this->createTableIfNotExists();
+    }
 
     private function createTableIfNotExists(): void
     {
@@ -43,19 +26,18 @@ class SqlUserRepository implements UserRepositoryInterface
  SQL;
         $this->pdo->exec($sql);
     }
-    public function getAll(): array
+    public function getAll(): iterable
     {
         $stmt = $this->pdo->query("SELECT * FROM users");
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $users = [];
-        foreach ($data as $userData) {
+        while ($userData = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $user = User::fromArray($userData);
-            $users[$user->id] = $user;
+            yield $user->id => $user;
         }
-        return $users;
+
     }
 
-    public function add(User $user): void{
+    public function add(User $user): void
+    {
         $stmt = $this->pdo->prepare("INSERT INTO users (surname, name, email) VALUES (:surname, :name, :email)");
         $stmt->execute([
             'surname' => $user->surname,
@@ -69,6 +51,9 @@ class SqlUserRepository implements UserRepositoryInterface
     {
         $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = :id");
         $stmt -> execute(['id' => $id]);
+        if ($stmt->rowCount() === 0) {
+            throw new UserNotFoundException();
+        }
     }
 
 

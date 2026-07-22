@@ -13,25 +13,25 @@ readonly class User
         public string $email
     ) {
         if ($id !== null && $id <= 0) {
-            throw new InvalidUserDataException("Id");
+            throw new InvalidUserDataException("Некорректный id");
         }
 
         if (trim($surname) === '') {
-            throw new InvalidUserDataException();
+            throw new InvalidUserDataException("Фамилия не может быть пустой");
         }
 
         if (trim($name) === '') {
-            throw new InvalidUserDataException();
+            throw new InvalidUserDataException("Имя не может быть пустым");
         }
 
         if (trim($email) === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new InvalidUserDataException();
+            throw new InvalidUserDataException("Некорректный адрес электронной почты");
         }
 
     }
     public static function fromArray(array $data): self
     {
-        return  new User($data['id'],$data['surname'], $data['name'], $data['email']);
+        return  new User($data['id'], $data['surname'], $data['name'], $data['email']);
     }
     public function toArray(): array
     {

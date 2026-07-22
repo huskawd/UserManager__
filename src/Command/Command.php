@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Exceptions\InvalidUserDataException;
+use App\Exceptions\UserNotFoundException;
 use App\Model\User;
 use App\Repository\UserRepositoryInterface;
 use Faker\Factory;
@@ -27,16 +29,17 @@ class Command
 
     private function showList(): void
     {
+        $checkUsers = false;
         $users = $this->userRepository->getAll();
-        if ($users === []) {
-            echo "Список пуст" . PHP_EOL;
-            return;
-        }
         foreach ($users as $user) {
+            $checkUsers = true;
             echo $user->id . " | " .
             $user->surname . " " .
             $user->name. " | " .
             $user->email . PHP_EOL;
+        }
+        if (!$checkUsers) {
+            echo "Список пуст" . PHP_EOL;
         }
     }
     private function helpMessage(): void
@@ -51,25 +54,30 @@ class Command
             echo "Неверное число аргументов" . PHP_EOL;
             return;
         }
-        if ($arguments === []) {
-            $faker = Factory::create('ru_RU');
+        try {
+            if ($arguments === []) {
+                $faker = Factory::create('ru_RU');
 
-            $user = new User(
-                null,
-                $faker->lastName,
-                $faker->firstName,
-                $faker->email
-            );
-        } else {
-            $user = new User(
-                null,
-                $arguments[0],
-                $arguments[1],
-                $arguments[2]
-            );
+                $user = new User(
+                    null,
+                    $faker->lastName,
+                    $faker->firstName,
+                    $faker->email
+                );
+            } else {
+                $user = new User(
+                    null,
+                    $arguments[0],
+                    $arguments[1],
+                    $arguments[2]
+                );
+            }
+
+            $this->userRepository->add($user);
+            echo "Пользователь добавлен" . PHP_EOL;
+        } catch (InvalidUserDataException $e) {
+            echo $e->getMessage() . PHP_EOL;
         }
-        $this->userRepository->add($user);
-        echo "Пользователь добавлен" . PHP_EOL;
     }
 
     private function delete(array $arguments): void
@@ -79,8 +87,13 @@ class Command
             return;
         }
         $id = (int) $arguments[0];
-        $this->userRepository->delete($id);
-        echo "Пользователь удалён" . PHP_EOL;
+        try {
+            $this->userRepository->delete($id);
+            echo "Пользователь удалён" . PHP_EOL;
+        } catch (UserNotFoundException $e) {
+            echo $e->getMessage();
+        };
+
     }
 
 }
