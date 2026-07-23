@@ -2,7 +2,7 @@
 
 namespace App\Config;
 
-use App\DtoDir\Dto;
+use App\Dto\DatabaseConfigDto;
 
 class ConfigBd
 {
@@ -11,9 +11,9 @@ class ConfigBd
         return $_ENV['DB_SOURCE'] ?? 'json';
     }
 
-    public function getDatabaseConfig(): Dto
+    public function getDatabaseConfig(): DatabaseConfigDto
     {
-        return new Dto(
+        return new DatabaseConfigDto(
             host: $_ENV['DB_HOST'],
             port: (int)$_ENV['DB_PORT'],
             database: $_ENV['DB_NAME'],

@@ -4,8 +4,7 @@ namespace App\Exceptions;
 
 class UserNotFoundException extends \RuntimeException
 {
-    protected $message = "Пользователь с таким id не найден";
-    public function __construct(?string $message = null)
+    public function __construct(?string $message = "Пользователь с таким id не найден")
     {
         parent::__construct($this->message);
     }

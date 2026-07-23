@@ -29,17 +29,18 @@ class Command
 
     private function showList(): void
     {
-        $checkUsers = false;
-        $users = $this->userRepository->getAll();
+        $users = iterator_to_array($this->userRepository->getAll());
+        if ($users === []) {
+            echo "Список пуст" . PHP_EOL;
+            return;
+        }
+
         foreach ($users as $user) {
             $checkUsers = true;
             echo $user->id . " | " .
             $user->surname . " " .
             $user->name. " | " .
             $user->email . PHP_EOL;
-        }
-        if (!$checkUsers) {
-            echo "Список пуст" . PHP_EOL;
         }
     }
     private function helpMessage(): void

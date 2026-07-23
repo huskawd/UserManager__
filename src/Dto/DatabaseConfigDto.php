@@ -1,8 +1,8 @@
 <?php
 
-namespace App\DtoDir;
+namespace App\Dto;
 
-readonly class Dto
+readonly class DatabaseConfigDto
 {
     public function __construct(
         public string $host,

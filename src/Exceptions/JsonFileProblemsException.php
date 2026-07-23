@@ -4,8 +4,7 @@ namespace App\Exceptions;
 
 class JsonFileProblemsException extends \RuntimeException
 {
-    protected $message = "Проблемы при работе с файлом json";
-    public function __construct(?string $message = null)
+    public function __construct(?string $message = "Проблемы при работе с файлом json")
     {
         parent::__construct($this->message);
     }
