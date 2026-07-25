@@ -8,12 +8,13 @@ $dotenv->load();
 use App\Command\Command;
 use App\Config\ConfigBd;
 use App\Repository\UserRepositoryFactory;
-
+use App\Service\UserService;
 
 $config = new ConfigBd();
 $logic = new UserRepositoryFactory($config);
 $repository = $logic->create();
-$command = new Command($repository);
+$userService = new UserService($repository);
+$command = new Command($userService);
 
 
 if (isset($argv[1])) {
