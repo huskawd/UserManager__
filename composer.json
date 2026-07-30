@@ -7,6 +7,10 @@
         }
     },
     "require-dev": {
-        "fakerphp/faker": "*"
+        "fakerphp/faker": "*",
+        "friendsofphp/php-cs-fixer": "^3.95"
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
     }
 }

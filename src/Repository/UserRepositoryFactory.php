@@ -1,24 +1,27 @@
 <?php
 
 namespace App\Repository;
+
 use App\Config\ConfigBd;
+
 class UserRepositoryFactory
 {
-    private ConfigBd $config;
     public function __construct(
-        ConfigBd $config,
-    ){
-        $this->config = $config;
+        private readonly ConfigBd $config
+    ) {
     }
+
 
     public function create(): UserRepositoryInterface
     {
-        $bd = $this->config->getConfig();
+        $bd = $this->config->getDataBase();
         if ($bd === 'json') {
             return new JsonUserRepository();
         }
         if ($bd === 'sql') {
-            return new SqlUserRepository();
+            $pdoFactory = new PdoFactory($this->config);
+            $pdo = $pdoFactory->create();
+            return new SqlUserRepository($pdo);
         }
         return new JsonUserRepository();
     }

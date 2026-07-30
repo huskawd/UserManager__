@@ -2,8 +2,10 @@
 declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
 use App\Command\Command;
-use App\Repository\JsonUserRepository;
 use App\Config\ConfigBd;
 use App\Repository\UserRepositoryFactory;
 
