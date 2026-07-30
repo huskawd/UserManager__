@@ -1,0 +1,12 @@
+{
+    "name": "user-manager/console",
+    "description": "Console app for managing users",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require-dev": {
+        "fakerphp/faker": "*"
+    }
+}
