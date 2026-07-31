@@ -40,16 +40,7 @@ class Router
     private function getUsers(): void
     {
         $users = $this->userService->getAll();
-        $result = [];
-        foreach ($users as $user) {
-            $result[] = [
-                    'id' => $user->id,
-                    'surname' => $user->surname,
-                    'name' => $user->name,
-                    'email' => $user->email,
-            ];
-        }
-        $this->response->send($result);
+        $this->response->sendUsers($users);
     }
 
     private function createUser(): void

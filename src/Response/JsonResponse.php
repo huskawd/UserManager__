@@ -11,4 +11,21 @@ class JsonResponse
 
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
+
+    public function sendUsers(iterable $users): void
+    {
+        $result = [];
+
+        foreach ($users as $user) {
+            $result[] = [
+                'id' => $user->id,
+                'surname' => $user->surname,
+                'name' => $user->name,
+                'email' => $user->email,
+            ];
+        }
+
+        $this->send($result);
+    }
+
 }

@@ -11,16 +11,6 @@ class ConsoleResponse
         }
     }
 
-    public function success(string $message): void
-    {
-        echo $message . PHP_EOL;
-    }
-
-    public function error(string $message): void
-    {
-        echo $message . PHP_EOL;
-    }
-
     public function message(string $message): void
     {
         echo $message . PHP_EOL;

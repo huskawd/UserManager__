@@ -5,9 +5,9 @@ namespace App\Command;
 use App\Exceptions\InvalidUserDataException;
 use App\Exceptions\UserNotFoundException;
 use App\Model\User;
+use App\Response\ConsoleResponse;
 use App\Service\UserService;
 use Faker\Factory;
-use App\Response\ConsoleResponse;
 
 class Command
 {
@@ -35,15 +35,15 @@ class Command
     private function delete(array $arguments): void
     {
         if ($arguments === [] || !is_numeric($arguments[0])) {
-            $this->consoleResponse->error("Укажите корректный id");
+            $this->consoleResponse->message("Укажите корректный id");
             return;
         }
         $id = (int) $arguments[0];
         try {
             $this->userService->delete($id);
-            $this->consoleResponse->success("Пользователь удалён");
+            $this->consoleResponse->message("Пользователь удалён");
         } catch (UserNotFoundException $e) {
-            $this->consoleResponse->error($e->getMessage());
+            $this->consoleResponse->message($e->getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ class Command
                 );
             } else {
                 if (count($arguments) !== 3) {
-                    $this->consoleResponse->error("Неверное число аргументов");
+                    $this->consoleResponse->message("Неверное число аргументов");
                     return;
                 }
                 $user = new User(
@@ -72,9 +72,9 @@ class Command
                 );
             }
             $this->userService->add($user);
-            $this->consoleResponse->success("Пользователь добавлен");
+            $this->consoleResponse->message("Пользователь добавлен");
         } catch (InvalidUserDataException $e) {
-            $this->consoleResponse->error($e->getMessage());
+            $this->consoleResponse->message($e->getMessage());
         }
     }
     private function showList(): void
