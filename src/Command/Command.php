@@ -7,18 +7,20 @@ use App\Exceptions\UserNotFoundException;
 use App\Model\User;
 use App\Service\UserService;
 use Faker\Factory;
+use App\Response\ConsoleResponse;
 
 class Command
 {
     public function __construct(
-        private UserService $userService
+        private UserService $userService,
+        private ConsoleResponse $consoleResponse
     ) {
 
     }
 
     private function helpMessage(): void
     {
-        echo "Неизвестная команда... Список доступных команд: list add delete";
+        $this->consoleResponse->help();
     }
     public function execute(string $command, array $arguments = []): void
     {
@@ -33,15 +35,15 @@ class Command
     private function delete(array $arguments): void
     {
         if ($arguments === [] || !is_numeric($arguments[0])) {
-            echo "Укажите корректный id" . PHP_EOL;
+            $this->consoleResponse->error("Укажите корректный id");
             return;
         }
         $id = (int) $arguments[0];
         try {
             $this->userService->delete($id);
-            echo "Пользователь удалён" . PHP_EOL;
+            $this->consoleResponse->success("Пользователь удалён");
         } catch (UserNotFoundException $e) {
-            echo $e->getMessage() . PHP_EOL;
+            $this->consoleResponse->error($e->getMessage());
         }
     }
 
@@ -59,7 +61,7 @@ class Command
                 );
             } else {
                 if (count($arguments) !== 3) {
-                    echo "Неверное число аргументов" . PHP_EOL;
+                    $this->consoleResponse->error("Неверное число аргументов");
                     return;
                 }
                 $user = new User(
@@ -70,23 +72,18 @@ class Command
                 );
             }
             $this->userService->add($user);
-            echo "Пользователь добавлен" . PHP_EOL;
+            $this->consoleResponse->success("Пользователь добавлен");
         } catch (InvalidUserDataException $e) {
-            echo $e->getMessage() . PHP_EOL;
+            $this->consoleResponse->error($e->getMessage());
         }
     }
     private function showList(): void
     {
         $users = iterator_to_array($this->userService->getAll());
         if ($users === []) {
-            echo "Список пуст" . PHP_EOL;
+            $this->consoleResponse->message("Список пуст");
             return;
         }
-        foreach ($users as $user) {
-            echo $user->id . " | " .
-                $user->surname . " " .
-                $user->name . " | " .
-                $user->email . PHP_EOL;
-        }
+        $this->consoleResponse->showUsers($users);
     }
 }
