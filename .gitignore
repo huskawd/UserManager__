@@ -2,3 +2,6 @@
 .env.local
 data/users.json
 .php-cs-fixer.cache
+postman/
+.postman/
+.idea/

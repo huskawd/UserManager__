@@ -5,18 +5,23 @@ namespace App\Command;
 use App\Exceptions\InvalidUserDataException;
 use App\Exceptions\UserNotFoundException;
 use App\Model\User;
-use App\Repository\UserRepositoryInterface;
+use App\Response\ConsoleResponse;
+use App\Service\UserService;
 use Faker\Factory;
 
 class Command
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository
+        private UserService $userService,
+        private ConsoleResponse $consoleResponse
     ) {
 
     }
 
-
+    private function helpMessage(): void
+    {
+        $this->consoleResponse->help();
+    }
     public function execute(string $command, array $arguments = []): void
     {
         match ($command) {
@@ -27,38 +32,27 @@ class Command
         };
     }
 
-    private function showList(): void
+    private function delete(array $arguments): void
     {
-        $users = iterator_to_array($this->userRepository->getAll());
-        if ($users === []) {
-            echo "Список пуст" . PHP_EOL;
+        if ($arguments === [] || !is_numeric($arguments[0])) {
+            $this->consoleResponse->message("Укажите корректный id");
             return;
         }
-
-        foreach ($users as $user) {
-            $checkUsers = true;
-            echo $user->id . " | " .
-            $user->surname . " " .
-            $user->name. " | " .
-            $user->email . PHP_EOL;
+        $id = (int) $arguments[0];
+        try {
+            $this->userService->delete($id);
+            $this->consoleResponse->message("Пользователь удалён");
+        } catch (UserNotFoundException $e) {
+            $this->consoleResponse->message($e->getMessage());
         }
-    }
-    private function helpMessage(): void
-    {
-        echo "Неизвестная команда... Список доступных команд: list add delete";
     }
 
 
     private function add(array $arguments): void
     {
-        if ($arguments !== [] && count($arguments) !== 3) {
-            echo "Неверное число аргументов" . PHP_EOL;
-            return;
-        }
         try {
             if ($arguments === []) {
                 $faker = Factory::create('ru_RU');
-
                 $user = new User(
                     null,
                     $faker->lastName,
@@ -66,6 +60,10 @@ class Command
                     $faker->email
                 );
             } else {
+                if (count($arguments) !== 3) {
+                    $this->consoleResponse->message("Неверное число аргументов");
+                    return;
+                }
                 $user = new User(
                     null,
                     $arguments[0],
@@ -73,28 +71,19 @@ class Command
                     $arguments[2]
                 );
             }
-
-            $this->userRepository->add($user);
-            echo "Пользователь добавлен" . PHP_EOL;
+            $this->userService->add($user);
+            $this->consoleResponse->message("Пользователь добавлен");
         } catch (InvalidUserDataException $e) {
-            echo $e->getMessage() . PHP_EOL;
+            $this->consoleResponse->message($e->getMessage());
         }
     }
-
-    private function delete(array $arguments): void
+    private function showList(): void
     {
-        if ($arguments === [] || !is_numeric($arguments[0])) {
-            echo "Укажите корректный id" . PHP_EOL;
+        $users = iterator_to_array($this->userService->getAll());
+        if ($users === []) {
+            $this->consoleResponse->message("Список пуст");
             return;
         }
-        $id = (int) $arguments[0];
-        try {
-            $this->userRepository->delete($id);
-            echo "Пользователь удалён" . PHP_EOL;
-        } catch (UserNotFoundException $e) {
-            echo $e->getMessage();
-        };
-
+        $this->consoleResponse->showUsers($users);
     }
-
 }
