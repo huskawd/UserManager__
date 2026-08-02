@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Dto\UserListDto;
 use App\Model\User;
 use App\Repository\UserRepositoryInterface;
 
@@ -14,7 +15,18 @@ class UserService
     }
     public function getAll(): iterable
     {
-        return $this->userRepository->getAll();
+        $users = $this->userRepository->getAll();
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[] = new UserListDto(
+                $user->id,
+                $user->surname,
+                $user->name,
+                $user->email
+            );
+        }
+        return $result;
     }
 
 
